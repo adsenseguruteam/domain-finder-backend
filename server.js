@@ -1964,7 +1964,18 @@ async function checkDomains(domainList) {
 
 	return allResults;
 }
-
+// Endpoint to find your current IP
+app.get("/api/server-ip", async (req, res) => {
+	try {
+		const response = await axios.get("https://api.ipify.org?format=json");
+		res.json({
+			ip: response.data.ip,
+			message: "Add this IP to Namecheap whitelist",
+		});
+	} catch (error) {
+		res.status(500).json({ error: error.message });
+	}
+});
 // API endpoint
 app.get("/api/domains", async (req, res) => {
 	try {
@@ -1981,11 +1992,14 @@ app.get("/api/domains", async (req, res) => {
 			});
 		}
 
+		const ipResponse = await axios.get("https://api.ipify.org?format=json");
+		const clientServerIp = ipResponse.data.ip;
+
 		// Check Namecheap credentials
 		const apiUser = process.env.NC_API_USER;
 		const apiKey = process.env.NC_API_KEY;
 		const username = process.env.NC_USERNAME;
-		const clientIp = process.env.CLIENT_IP;
+		const clientIp = clientServerIp;
 
 		if (!apiUser || !apiKey || !username || !clientIp) {
 			console.error("Missing credentials:", {
